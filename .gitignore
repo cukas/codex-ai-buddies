@@ -1,0 +1,13 @@
+.DS_Store
+*.log
+*.tmp
+
+node_modules/
+.tmp/
+
+# local Codex / buddies runtime state
+.codexs-ai-buddies/
+
+# editor / OS noise
+.idea/
+.vscode/

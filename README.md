@@ -167,6 +167,13 @@ Inside Codex, the intended prompts are short and mode-first:
 
 Outside Codex, run the same workflows directly from the repo scripts.
 
+Example repo-targeted prompts:
+
+- `brainstorm what's missing in kern review`
+- `review this diff with Claude and OpenCode`
+- `forge this implementation in agon`
+- `run the evil pipeline on this risky auth refactor`
+
 ## Rich custom buddy registration
 
 Simple stdin-driven buddy:
@@ -254,6 +261,13 @@ Current Codex installs reliably support skills and plugin metadata, but not cust
 - plugin install surfaces that make the skills available in Codex
 
 That is the practical replacement for a true SessionStart hook or custom local slash-command layer on current Codex installs.
+
+## Known Limitations
+
+- custom local slash commands do not show up reliably in current Codex builds
+- networked buddy CLIs can fail inside Codex-hosted sandboxed runs
+- Gemini CLI compatibility depends on the local Node/runtime state
+- the strongest experience today is skill-routing inside Codex and direct script runs outside Codex
 
 ## Current scope
 
