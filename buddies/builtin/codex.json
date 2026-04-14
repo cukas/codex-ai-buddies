@@ -19,6 +19,10 @@
   ],
   "builtin": true,
   "network_required": true,
+  "preflight_urls": [
+    "https://chatgpt.com"
+  ],
+  "default_priority": 30,
   "adapter_script": "codex-run.sh",
   "install_hint": "npm install -g @openai/codex",
   "timeout": 600

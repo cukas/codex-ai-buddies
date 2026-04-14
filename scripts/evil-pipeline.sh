@@ -40,6 +40,10 @@ if [[ -z "$FITNESS" ]]; then
 fi
 
 AVAILABLE="$(codex_buddies_default_buddy_roster)"
+if [[ -z "$AVAILABLE" ]]; then
+  codex_buddies_no_buddies_error "evil-pipeline" >&2
+  exit 1
+fi
 if [[ -n "$ENGINES" ]]; then
   FORGE_ENGINES="$ENGINES"
 else
@@ -48,7 +52,10 @@ fi
 if [[ "$LOCAL_ONLY" == "true" ]]; then
   FORGE_ENGINES="$(codex_buddies_csv_local_only "$FORGE_ENGINES")"
 fi
-[[ -n "$FORGE_ENGINES" ]] || { echo "ERROR: no local-only buddies are available for evil-pipeline" >&2; exit 1; }
+if [[ -z "$FORGE_ENGINES" ]]; then
+  codex_buddies_no_buddies_error "evil-pipeline" >&2
+  exit 1
+fi
 if [[ "$FORGE_ENGINES" != *"doppelganger"* ]]; then
   FORGE_ENGINES="${FORGE_ENGINES},doppelganger"
 fi

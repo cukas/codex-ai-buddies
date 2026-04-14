@@ -52,7 +52,7 @@ SESSION_DIR="$(codex_buddies_session_dir)"
 STAMP="$(date '+%Y%m%d-%H%M%S')"
 OUTPUT_FILE="${SESSION_DIR}/${BUDDY_ID}-output-${STAMP}.md"
 ERROR_FILE="${SESSION_DIR}/${BUDDY_ID}-error-${STAMP}.log"
-PROMPT_FILE="$(mktemp "${SESSION_DIR}/${BUDDY_ID}-prompt-XXXXXX.txt")"
+PROMPT_FILE="$(mktemp "${SESSION_DIR}/${BUDDY_ID}-prompt-XXXXXX")"
 printf '%s' "$PROMPT" > "$PROMPT_FILE"
 
 MODE_QUERY=".${MODE}.args[]?"
@@ -108,6 +108,10 @@ elif [[ $EXIT_CODE -ne 0 ]]; then
     printf 'ERROR: %s exited with code %s\n\n' "$BUDDY_ID" "$EXIT_CODE"
     printf -- '--- stderr ---\n'
     cat "$ERROR_FILE" 2>/dev/null || true
+    if [[ "$BUDDY_ID" == "gemini" ]] && grep -q 'Invalid regular expression flags' "$ERROR_FILE" 2>/dev/null; then
+      printf '\n--- note ---\n'
+      printf 'Gemini CLI failed before prompt execution. This points to a local Gemini CLI or Node runtime mismatch; reinstall Gemini CLI or upgrade the runtime used to launch it.\n'
+    fi
   } > "$OUTPUT_FILE"
 fi
 

@@ -72,6 +72,18 @@ codex_buddies_synthesis_top_n() {
   codex_buddies_config "synthesis_top_n" "2"
 }
 
+codex_buddies_preflight_network_buddies() {
+  codex_buddies_config "preflight_network_buddies" "true"
+}
+
+codex_buddies_preflight_timeout() {
+  codex_buddies_config "preflight_timeout" "4"
+}
+
+codex_buddies_include_experimental() {
+  codex_buddies_config "include_experimental" "false"
+}
+
 codex_buddies_elo_enabled() {
   codex_buddies_config "elo_enabled" "true"
 }
@@ -241,6 +253,139 @@ codex_buddies_available_buddies() {
   printf '%s\n' "${available[*]-}"
 }
 
+codex_buddies_gemini_runtime_healthy() {
+  local gemini_bin package_root resolved
+
+  gemini_bin="$(codex_buddies_find_buddy "gemini" 2>/dev/null || true)"
+  [[ -n "$gemini_bin" ]] || return 1
+  command -v node >/dev/null 2>&1 || return 1
+
+  resolved="$(readlink "$gemini_bin" 2>/dev/null || true)"
+  if [[ -n "$resolved" ]]; then
+    package_root="$(cd "$(dirname "${gemini_bin}")/../lib/node_modules/@google/gemini-cli" 2>/dev/null && pwd)"
+  else
+    package_root="$(cd "$(dirname "$gemini_bin")/.." 2>/dev/null && pwd)"
+  fi
+
+  [[ -n "$package_root" ]] || return 1
+  [[ -f "${package_root}/node_modules/string-width/index.js" ]] || return 1
+
+  node -e "import('${package_root}/node_modules/string-width/index.js').then(()=>process.exit(0)).catch(()=>process.exit(1))" >/dev/null 2>&1
+}
+
+codex_buddies_url_reachable() {
+  local url="$1"
+  local timeout_secs
+  timeout_secs="$(codex_buddies_preflight_timeout)"
+
+  command -v curl >/dev/null 2>&1 || return 0
+
+  curl \
+    --silent \
+    --show-error \
+    --location \
+    --output /dev/null \
+    --connect-timeout "$timeout_secs" \
+    --max-time "$timeout_secs" \
+    "$url" >/dev/null 2>&1
+}
+
+codex_buddies_buddy_network_reachable() {
+  local id="$1"
+  local url json_file
+
+  if [[ "$(codex_buddies_preflight_network_buddies)" != "true" ]]; then
+    return 0
+  fi
+
+  if [[ "$(codex_buddies_buddy_json_query "$id" '.network_required' 'false')" != "true" ]]; then
+    return 0
+  fi
+
+  json_file="$(codex_buddies_find_buddy_json "$id" 2>/dev/null || true)"
+  [[ -n "$json_file" && -f "$json_file" ]] || return 0
+  command -v jq >/dev/null 2>&1 || return 0
+
+  while IFS= read -r url; do
+    [[ -n "$url" ]] || continue
+    if codex_buddies_url_reachable "$url"; then
+      return 0
+    fi
+  done < <(jq -r '.preflight_urls[]? // empty' "$json_file" 2>/dev/null || true)
+
+  if jq -e '.preflight_urls | length > 0' "$json_file" >/dev/null 2>&1; then
+    return 1
+  fi
+
+  return 0
+}
+
+codex_buddies_buddy_is_healthy() {
+  local id="$1"
+
+  codex_buddies_buddy_runtime_healthy "$id" || return 1
+
+  codex_buddies_buddy_network_reachable "$id"
+}
+
+codex_buddies_buddy_runtime_healthy() {
+  local id="$1"
+
+  case "$id" in
+    gemini)
+      codex_buddies_gemini_runtime_healthy
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+codex_buddies_csv_without_experimental() {
+  local csv="$1"
+  local engine
+  local -a filtered=() _engines=()
+
+  IFS=',' read -r -a _engines <<< "$csv"
+  for engine in "${_engines[@]-}"; do
+    [[ -n "$engine" ]] || continue
+    if [[ "$(codex_buddies_buddy_json_query "$engine" '.experimental' 'false')" == "true" ]]; then
+      continue
+    fi
+    filtered+=("$engine")
+  done
+
+  local IFS=','
+  printf '%s\n' "${filtered[*]-}"
+}
+
+codex_buddies_sort_csv_by_priority() {
+  local csv="$1"
+  local lines="" engine priority
+  local -a _engines=()
+
+  IFS=',' read -r -a _engines <<< "$csv"
+  for engine in "${_engines[@]-}"; do
+    [[ -n "$engine" ]] || continue
+    priority="$(codex_buddies_buddy_json_query "$engine" '.default_priority' '50')"
+    lines+="${priority}:${engine}"$'\n'
+  done
+
+  if [[ -z "$lines" ]]; then
+    printf '\n'
+    return 0
+  fi
+
+  local sorted=()
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    sorted+=("${line#*:}")
+  done < <(printf '%s' "$lines" | sort -t: -k1,1n)
+
+  local IFS=','
+  printf '%s\n' "${sorted[*]-}"
+}
+
 codex_buddies_host_is_codex() {
   [[ -n "${CODEX_SESSION_ID:-}" ]] && printf 'true\n' || printf 'false\n'
 }
@@ -248,10 +393,11 @@ codex_buddies_host_is_codex() {
 codex_buddies_csv_without_engine() {
   local csv="$1"
   local banned="$2"
-  local engine filtered=()
+  local engine
+  local -a filtered=() _engines=()
 
   IFS=',' read -r -a _engines <<< "$csv"
-  for engine in "${_engines[@]}"; do
+  for engine in "${_engines[@]-}"; do
     [[ -n "$engine" ]] || continue
     [[ "$engine" == "$banned" ]] && continue
     filtered+=("$engine")
@@ -263,10 +409,11 @@ codex_buddies_csv_without_engine() {
 
 codex_buddies_csv_local_only() {
   local csv="$1"
-  local engine filtered=()
+  local engine
+  local -a filtered=() _engines=()
 
   IFS=',' read -r -a _engines <<< "$csv"
-  for engine in "${_engines[@]}"; do
+  for engine in "${_engines[@]-}"; do
     [[ -n "$engine" ]] || continue
     if [[ "$(codex_buddies_buddy_json_query "$engine" '.network_required' 'false')" == "true" ]]; then
       continue
@@ -278,13 +425,37 @@ codex_buddies_csv_local_only() {
   printf '%s\n' "${filtered[*]-}"
 }
 
+codex_buddies_no_buddies_error() {
+  local mode="$1"
+  cat <<EOF
+ERROR: no usable buddies are available for ${mode} in this session.
+
+Installed buddies were either not found locally or failed their runtime / network preflight checks from this process.
+
+You can retry from your normal shell, or disable buddy network preflight with:
+  ~/.codexs-ai-buddies/config.json -> {"preflight_network_buddies": false}
+EOF
+}
+
 codex_buddies_default_buddy_roster() {
-  local available
+  local available engine healthy=()
   available="$(codex_buddies_available_buddies)"
 
-  if [[ "$(codex_buddies_host_is_codex)" == "true" ]]; then
-    available="$(codex_buddies_csv_without_engine "$available" "codex")"
+  if [[ "$(codex_buddies_include_experimental)" != "true" ]]; then
+    available="$(codex_buddies_csv_without_experimental "$available")"
   fi
+
+  IFS=',' read -r -a _engines <<< "$available"
+  for engine in "${_engines[@]-}"; do
+    [[ -n "$engine" ]] || continue
+    if codex_buddies_buddy_is_healthy "$engine"; then
+      healthy+=("$engine")
+    fi
+  done
+  local IFS=','
+  available="${healthy[*]-}"
+
+  available="$(codex_buddies_sort_csv_by_priority "$available")"
 
   printf '%s\n' "$available"
 }

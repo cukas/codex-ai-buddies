@@ -21,6 +21,10 @@
   ],
   "builtin": true,
   "network_required": true,
+  "preflight_urls": [
+    "https://api.anthropic.com"
+  ],
+  "default_priority": 10,
   "adapter_script": "templated-run.sh",
   "install_hint": "npm install -g @anthropic-ai/claude-code",
   "timeout": 600,

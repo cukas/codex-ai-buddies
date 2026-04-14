@@ -23,6 +23,10 @@
   ],
   "builtin": true,
   "network_required": true,
+  "preflight_urls": [
+    "https://models.dev"
+  ],
+  "default_priority": 20,
   "adapter_script": "templated-run.sh",
   "install_hint": "curl -fsSL https://opencode.ai/install | bash",
   "timeout": 900,

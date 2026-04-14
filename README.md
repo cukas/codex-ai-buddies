@@ -45,6 +45,7 @@ codexs-ai-buddies/
 ├── scripts/
 │   ├── lib.sh
 │   ├── buddy-register.sh
+│   ├── buddy-doctor.sh
 │   ├── buddy-run.sh
 │   ├── claude-run.sh
 │   ├── codex-run.sh
@@ -98,6 +99,12 @@ Built-in roster now includes:
 - `opencode`
 - `doppelganger` (auto-created blind Codex competitor)
 
+Default roster behavior:
+
+- prefers `claude`, `opencode`, `gemini`, then `codex`
+- skips buddies that fail runtime or provider preflight from the current process
+- uses actual reachability checks instead of blanket host-based bans
+
 ## How engines connect
 
 The connection model follows the useful part of Agon:
@@ -149,6 +156,7 @@ That installer now:
 ```bash
 bash scripts/campfire-run.sh --task "figure out the right buddies workflow for this auth change" --cwd /path/to/repo
 bash scripts/brainstorm-run.sh --task "fix the flaky websocket reconnection test" --cwd /path/to/repo
+bash scripts/buddy-doctor.sh
 bash scripts/review-run.sh --cwd /path/to/repo --review-target uncommitted
 bash scripts/forge-run.sh --task "add input validation to src/math.ts" --cwd /path/to/repo
 bash scripts/evil-pipeline.sh --task "implement auth middleware" --cwd /path/to/repo
@@ -170,6 +178,7 @@ Outside Codex, run the same workflows directly from the repo scripts.
 Example repo-targeted prompts:
 
 - `brainstorm what's missing in kern review`
+- `doctor my buddies`
 - `review this diff with Claude and OpenCode`
 - `forge this implementation in agon`
 - `run the evil pipeline on this risky auth refactor`
@@ -252,6 +261,17 @@ Use it when you want the buddies system to choose the right mode for you.
 - supports `uncommitted`, `branch:<base>`, and `commit:<sha>`
 - returns one combined report with individual buddy reviews and convergence notes
 
+## Buddy Doctor
+
+`buddy-doctor.sh` explains why a buddy is or is not usable from the current process.
+
+- checks local CLI discovery
+- checks runtime health
+- checks provider reachability preflight when configured
+- shows which buddies make the default roster right now
+
+Use it when a buddy works in your shell but not from a Codex-managed run, or when the default roster is smaller than expected.
+
 ## Codex Reality
 
 Current Codex installs reliably support skills and plugin metadata, but not custom local slash commands in the way Claude exposes them. So this repo is designed around:
@@ -265,7 +285,7 @@ That is the practical replacement for a true SessionStart hook or custom local s
 ## Known Limitations
 
 - custom local slash commands do not show up reliably in current Codex builds
-- networked buddy CLIs can fail inside Codex-hosted sandboxed runs
+- provider-backed buddy CLIs can fail when the current process cannot reach their backends
 - Gemini CLI compatibility depends on the local Node/runtime state
 - the strongest experience today is skill-routing inside Codex and direct script runs outside Codex
 

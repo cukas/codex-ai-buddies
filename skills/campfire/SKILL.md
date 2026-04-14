@@ -13,6 +13,8 @@ Typical user phrasing:
 - "use the buddies here"
 - "pick the right buddies workflow"
 - "choose whether this should be brainstorm, forge, or evil-pipeline"
+- "decide which mode makes sense here"
+- "pick the mode you think is right"
 
 Do not use this when the user already chose a mode such as:
 
@@ -29,8 +31,17 @@ Do not use this when the user already chose a mode such as:
 ## Workflow
 
 1. Confirm the task and repository path.
-2. Detect the fitness command if the task is implementation-oriented.
-3. Run:
+2. If the user asked you to decide, choose, pick, or recommend the mode, do not launch a full buddies workflow yet. Run:
+
+```bash
+bash "<plugin-root>/scripts/campfire-run.sh" \
+  --task "<task>" \
+  --cwd "<repo>" \
+  --recommend-only \
+  --print-report
+```
+
+3. If the user explicitly asked to run campfire, use buddies here, or run whichever mode makes sense, detect the fitness command if the task is implementation-oriented and run:
 
 ```bash
 bash "<plugin-root>/scripts/campfire-run.sh" \
@@ -39,4 +50,5 @@ bash "<plugin-root>/scripts/campfire-run.sh" \
   --print-report
 ```
 
-4. Report the chosen mode and its result.
+4. If recommendation-only was used, report the chosen mode and why.
+5. If a full run was used, report the chosen mode and its result.

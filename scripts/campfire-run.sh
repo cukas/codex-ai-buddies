@@ -12,6 +12,7 @@ TIMEOUT="1800"
 PRINT_REPORT="false"
 MODE=""
 LOCAL_ONLY="false"
+RECOMMEND_ONLY="false"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -23,6 +24,7 @@ while [[ $# -gt 0 ]]; do
     --mode) MODE="$2"; shift 2 ;;
     --print-report) PRINT_REPORT="true"; shift 1 ;;
     --local-only) LOCAL_ONLY="true"; shift 1 ;;
+    --recommend-only) RECOMMEND_ONLY="true"; shift 1 ;;
     *) echo "ERROR: Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
@@ -44,6 +46,31 @@ if [[ -z "$MODE" ]]; then
   else
     MODE="forge"
   fi
+fi
+
+MODE_REASON=""
+case "$MODE" in
+  brainstorm)
+    MODE_REASON="Best when the task is exploratory, comparative, or about what is missing."
+    ;;
+  forge)
+    MODE_REASON="Best when the task is implementation-heavy and you want multiple buddies to compete on a concrete change."
+    ;;
+  evil-pipeline)
+    MODE_REASON="Best when the task is risky and you want the strongest adversarial and verification path."
+    ;;
+esac
+
+if [[ "$RECOMMEND_ONLY" == "true" ]]; then
+  if [[ "$PRINT_REPORT" == "true" ]]; then
+    printf '# Campfire\n\n'
+    printf 'Recommended mode: `%s`\n\n' "$MODE"
+    printf '%s\n\n' "$MODE_REASON"
+    printf 'Suggested next prompt: `%s %s`\n' "$MODE" "$TASK"
+  else
+    printf '%s\n' "$MODE"
+  fi
+  exit 0
 fi
 
 case "$MODE" in

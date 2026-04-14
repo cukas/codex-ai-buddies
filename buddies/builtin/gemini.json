@@ -22,6 +22,10 @@
   ],
   "builtin": true,
   "network_required": true,
+  "preflight_urls": [
+    "https://generativelanguage.googleapis.com"
+  ],
+  "default_priority": 25,
   "adapter_script": "templated-run.sh",
   "install_hint": "npm install -g @google/gemini-cli",
   "timeout": 600,

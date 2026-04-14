@@ -70,7 +70,10 @@ review_failure_issue() {
 }
 
 AVAILABLE="$(codex_buddies_default_buddy_roster)"
-[[ -z "$AVAILABLE" ]] && { echo "ERROR: no buddies are available" >&2; exit 1; }
+if [[ -z "$AVAILABLE" ]]; then
+  codex_buddies_no_buddies_error "review" >&2
+  exit 1
+fi
 
 if [[ -n "$ENGINES" ]]; then
   SELECTED="$ENGINES"
@@ -80,7 +83,10 @@ fi
 if [[ "$LOCAL_ONLY" == "true" ]]; then
   SELECTED="$(codex_buddies_csv_local_only "$SELECTED")"
 fi
-[[ -n "$SELECTED" ]] || { echo "ERROR: no buddies are available for review" >&2; exit 1; }
+if [[ -z "$SELECTED" ]]; then
+  codex_buddies_no_buddies_error "review" >&2
+  exit 1
+fi
 
 IFS=',' read -r -a ENGINE_LIST <<< "$SELECTED"
 SESSION_DIR="$(codex_buddies_session_dir)"

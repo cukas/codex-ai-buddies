@@ -48,7 +48,10 @@ if [[ -z "$FITNESS" ]]; then
 fi
 
 AVAILABLE="$(codex_buddies_default_buddy_roster)"
-[[ -z "$AVAILABLE" ]] && { echo "ERROR: no buddies are available" >&2; exit 1; }
+if [[ -z "$AVAILABLE" ]]; then
+  codex_buddies_no_buddies_error "forge" >&2
+  exit 1
+fi
 
 if [[ -n "$ENGINES" ]]; then
   SELECTED="$ENGINES"
@@ -58,7 +61,10 @@ fi
 if [[ "$LOCAL_ONLY" == "true" ]]; then
   SELECTED="$(codex_buddies_csv_local_only "$SELECTED")"
 fi
-[[ -n "$SELECTED" ]] || { echo "ERROR: no local-only buddies are available for forge" >&2; exit 1; }
+if [[ -z "$SELECTED" ]]; then
+  codex_buddies_no_buddies_error "forge" >&2
+  exit 1
+fi
 
 if [[ -z "$FORGE_DIR" ]]; then
   FORGE_DIR="$(codex_buddies_session_dir)/forge-$(date '+%Y%m%d-%H%M%S')"

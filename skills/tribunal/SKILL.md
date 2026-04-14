@@ -16,7 +16,9 @@ Use this when the user wants argument and counterargument rather than direct imp
 ```bash
 bash "<plugin-root>/scripts/tribunal-run.sh" \
   --question "<question>" \
-  --cwd "<repo>"
+  --cwd "<repo>" \
+  --print-report
 ```
 
-4. Summarize the strongest claim from each side and the unresolved disagreement.
+4. Present the tribunal report.
+5. If fewer than two buddies returned usable openings, say the tribunal degraded and do not invent a winner.
