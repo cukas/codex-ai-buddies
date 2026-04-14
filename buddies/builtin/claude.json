@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "claude",
+  "display_name": "Claude (Anthropic)",
+  "binary": "claude",
+  "search_paths": [
+    "${HOME}/.local/bin/claude",
+    "${HOME}/.npm-global/bin/claude",
+    "/usr/local/bin/claude"
+  ],
+  "version_cmd": [
+    "--version"
+  ],
+  "model_config_key": "claude_model",
+  "model": {
+    "flag": "--model"
+  },
+  "modes": [
+    "exec",
+    "review"
+  ],
+  "builtin": true,
+  "network_required": true,
+  "adapter_script": "templated-run.sh",
+  "install_hint": "npm install -g @anthropic-ai/claude-code",
+  "timeout": 600,
+  "tier": "builtin",
+  "exec": {
+    "args": [
+      "--print",
+      "-p",
+      "{prompt}",
+      "--allowedTools",
+      "Edit,Write,Read,Bash,Glob,Grep",
+      "--max-turns",
+      "50"
+    ]
+  },
+  "review": {
+    "args": [
+      "--print",
+      "-p",
+      "{prompt}",
+      "--allowedTools",
+      "Edit,Write,Read,Bash,Glob,Grep",
+      "--max-turns",
+      "50"
+    ]
+  }
+}

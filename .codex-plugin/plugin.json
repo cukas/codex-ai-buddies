@@ -1,0 +1,36 @@
+{
+  "name": "codexs-ai-buddies",
+  "version": "0.1.0",
+  "description": "Codex-native multi-AI buddy system with competitive forge runs and an Evil Twin pipeline.",
+  "author": {
+    "name": "Nicolas Cukas"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "multi-ai",
+    "forge",
+    "brainstorm",
+    "evil-twin",
+    "competitive-builds",
+    "buddies"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex's AI Buddies",
+    "shortDescription": "Competitive multi-AI workflows for Codex",
+    "longDescription": "Run confidence bids, competitive worktree builds, adversarial self-checks, and blind Doppelganger verification from a Codex-native plugin.",
+    "developerName": "Nicolas Cukas",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Brainstorm this task across my registered AI buddies",
+      "Forge this task with Codex plus my other AI CLIs",
+      "Run the evil pipeline on this repository task"
+    ],
+    "brandColor": "#0F766E"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "gemini",
+  "display_name": "Gemini (Google)",
+  "binary": "gemini",
+  "search_paths": [
+    "/opt/homebrew/bin/gemini",
+    "${HOME}/.local/bin/gemini",
+    "${HOME}/.npm-global/bin/gemini",
+    "/usr/local/bin/gemini"
+  ],
+  "version_cmd": [
+    "--version"
+  ],
+  "model_config_key": "gemini_model",
+  "model": {
+    "flag": "--model"
+  },
+  "modes": [
+    "exec",
+    "review"
+  ],
+  "builtin": true,
+  "network_required": true,
+  "adapter_script": "templated-run.sh",
+  "install_hint": "npm install -g @google/gemini-cli",
+  "timeout": 600,
+  "tier": "builtin",
+  "exec": {
+    "args": [
+      "-p",
+      "{prompt}",
+      "--approval-mode",
+      "yolo"
+    ]
+  },
+  "review": {
+    "args": [
+      "-p",
+      "{prompt}",
+      "--approval-mode",
+      "plan"
+    ]
+  }
+}

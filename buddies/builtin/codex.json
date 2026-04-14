@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "codex",
+  "display_name": "Codex (OpenAI)",
+  "binary": "codex",
+  "search_paths": [
+    "/opt/homebrew/bin/codex",
+    "/usr/local/bin/codex",
+    "${HOME}/.local/bin/codex",
+    "${HOME}/.nvm/versions/node/*/bin/codex"
+  ],
+  "version_cmd": [
+    "--version"
+  ],
+  "model_config_key": "codex_model",
+  "modes": [
+    "exec",
+    "review"
+  ],
+  "builtin": true,
+  "network_required": true,
+  "adapter_script": "codex-run.sh",
+  "install_hint": "npm install -g @openai/codex",
+  "timeout": 600
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex's AI Buddies"
+  short_description: "Run buddy brainstorms, forge competitions, and evil pipelines"
+  default_prompt: "Use Codex's AI Buddies to run the best-fit multi-engine workflow for this coding task."
