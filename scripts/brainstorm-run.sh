@@ -156,7 +156,7 @@ for engine in "${ENGINE_LIST[@]}"; do
         printf 'Risks:\n'
         while IFS= read -r risk; do
           [[ -n "$risk" ]] || continue
-          printf '- %s\n' "$risk"
+          printf -- '- %s\n' "$risk"
         done <<< "$risks"
         printf '\n'
       fi
@@ -198,34 +198,34 @@ fi
 
 CONVERGENCE_FOUND="false"
 if (( CROSS_FILE_COUNT >= 2 )); then
-  printf '- Multiple buddies independently pointed to cross-file or graph-aware validation gaps.\n' >> "$REPORT_FILE"
+  printf -- '- Multiple buddies independently pointed to cross-file or graph-aware validation gaps.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( KERN_COUNT >= 2 )); then
-  printf '- There is strong overlap around missing `.kern` semantic or target-aware review coverage.\n' >> "$REPORT_FILE"
+  printf -- '- There is strong overlap around missing `.kern` semantic or target-aware review coverage.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( REACT_COUNT >= 2 )); then
-  printf '- React/TSX review breadth looks under-covered beyond the current fundamentals.\n' >> "$REPORT_FILE"
+  printf -- '- React/TSX review breadth looks under-covered beyond the current fundamentals.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( NEXT_COUNT >= 2 )); then
-  printf '- Several buddies called out Next.js or RSC-style client/server boundary checks as a likely blind spot.\n' >> "$REPORT_FILE"
+  printf -- '- Several buddies called out Next.js or RSC-style client/server boundary checks as a likely blind spot.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( DATAFLOW_COUNT >= 2 )); then
-  printf '- Handler-level taint or dataflow analysis came up repeatedly as a missing capability.\n' >> "$REPORT_FILE"
+  printf -- '- Handler-level taint or dataflow analysis came up repeatedly as a missing capability.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( PIPELINE_COUNT >= 2 )); then
-  printf '- More than one buddy suggested the main gap may be review-pipeline wiring, not just missing standalone rules.\n' >> "$REPORT_FILE"
+  printf -- '- More than one buddy suggested the main gap may be review-pipeline wiring, not just missing standalone rules.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if [[ "$CONVERGENCE_FOUND" != "true" ]]; then
   if (( VALID_COUNT >= 2 )); then
-    printf '- Buddies overlapped only loosely; they agreed there are review gaps but diverged on the exact highest-priority area.\n' >> "$REPORT_FILE"
+    printf -- '- Buddies overlapped only loosely; they agreed there are review gaps but diverged on the exact highest-priority area.\n' >> "$REPORT_FILE"
   else
-    printf '- Not enough structured buddy responses to assess convergence.\n' >> "$REPORT_FILE"
+    printf -- '- Not enough structured buddy responses to assess convergence.\n' >> "$REPORT_FILE"
   fi
 fi
 printf '\n' >> "$REPORT_FILE"

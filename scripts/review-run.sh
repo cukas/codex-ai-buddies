@@ -151,30 +151,30 @@ done
 
 CONVERGENCE_FOUND="false"
 if (( TEST_COUNT >= 2 )); then
-  printf '- Multiple buddies independently called out missing tests or coverage gaps.\n' >> "$REPORT_FILE"
+  printf -- '- Multiple buddies independently called out missing tests or coverage gaps.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( REGRESSION_COUNT >= 2 )); then
-  printf '- There is overlap around potential regressions or behavior changes.\n' >> "$REPORT_FILE"
+  printf -- '- There is overlap around potential regressions or behavior changes.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( SECURITY_COUNT >= 2 )); then
-  printf '- More than one buddy surfaced a security or permission-related concern.\n' >> "$REPORT_FILE"
+  printf -- '- More than one buddy surfaced a security or permission-related concern.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( PERFORMANCE_COUNT >= 2 )); then
-  printf '- Performance risk came up repeatedly across the reviews.\n' >> "$REPORT_FILE"
+  printf -- '- Performance risk came up repeatedly across the reviews.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if (( CORRECTNESS_COUNT >= 2 )); then
-  printf '- Correctness or contract-validation issues appeared in multiple reviews.\n' >> "$REPORT_FILE"
+  printf -- '- Correctness or contract-validation issues appeared in multiple reviews.\n' >> "$REPORT_FILE"
   CONVERGENCE_FOUND="true"
 fi
 if [[ "$CONVERGENCE_FOUND" != "true" ]]; then
   if (( VALID_COUNT >= 2 )); then
-    printf '- Buddies produced usable reviews, but they did not strongly converge on a single dominant risk.\n' >> "$REPORT_FILE"
+    printf -- '- Buddies produced usable reviews, but they did not strongly converge on a single dominant risk.\n' >> "$REPORT_FILE"
   else
-    printf '- Not enough successful buddy reviews to assess convergence.\n' >> "$REPORT_FILE"
+    printf -- '- Not enough successful buddy reviews to assess convergence.\n' >> "$REPORT_FILE"
   fi
 fi
 printf '\n' >> "$REPORT_FILE"
