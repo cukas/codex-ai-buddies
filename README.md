@@ -137,30 +137,54 @@ Example richer engine contract:
 ## Quick start
 
 1. Make sure `codex` is installed and authenticated.
-2. Install the plugin locally:
+2. Clone this repo and `cd` into it.
+3. Install the plugin for normal use:
 
 ```bash
 bash scripts/install-local.sh
 ```
 
-That installer now:
+That default install now:
 
-- links the plugin into `~/.codex/plugins/local/codexs-ai-buddies`
+- copies the plugin into `~/.codex/plugins/local/codexs-ai-buddies`
 - links a home-local plugin alias into `~/plugins/codexs-ai-buddies`
 - seeds or updates `~/.agents/plugins/marketplace.json`
 - links buddy skills into `~/.codex/skills`
 
-3. Register other CLIs with `scripts/buddy-register.sh`.
-4. Run one of:
+That is the user install path. It is self-contained under `~/.codex`, so you do not need to keep the repo checkout after installing.
+
+If you are developing this repo and want live edits to show up in Codex, use:
 
 ```bash
-bash scripts/campfire-run.sh --task "figure out the right buddies workflow for this auth change" --cwd /path/to/repo
-bash scripts/brainstorm-run.sh --task "fix the flaky websocket reconnection test" --cwd /path/to/repo
-bash scripts/buddy-doctor.sh
-bash scripts/review-run.sh --cwd /path/to/repo --review-target uncommitted
-bash scripts/forge-run.sh --task "add input validation to src/math.ts" --cwd /path/to/repo
-bash scripts/evil-pipeline.sh --task "implement auth middleware" --cwd /path/to/repo
-bash scripts/elo-show.sh
+bash scripts/install-local.sh --link
+```
+
+`--link` is the dev install path. It symlinks the repo into Codex, so moving or deleting the checkout will break the install.
+
+4. Restart Codex if it is already running.
+5. Check what is available:
+
+```bash
+PLUGIN_HOME="$HOME/.codex/plugins/local/codexs-ai-buddies"
+bash "$PLUGIN_HOME/scripts/buddy-doctor.sh"
+```
+
+With only `codex` installed, you can still use the built-in Codex workflow. To get the full multi-buddy experience, register other CLIs such as Claude, Gemini, or OpenCode:
+
+```bash
+bash "$PLUGIN_HOME/scripts/buddy-register.sh" --id gemini --binary gemini --display "Gemini"
+```
+
+6. Run one of:
+
+```bash
+PLUGIN_HOME="$HOME/.codex/plugins/local/codexs-ai-buddies"
+bash "$PLUGIN_HOME/scripts/campfire-run.sh" --task "figure out the right buddies workflow for this auth change" --cwd /path/to/repo
+bash "$PLUGIN_HOME/scripts/brainstorm-run.sh" --task "fix the flaky websocket reconnection test" --cwd /path/to/repo
+bash "$PLUGIN_HOME/scripts/review-run.sh" --cwd /path/to/repo --review-target uncommitted
+bash "$PLUGIN_HOME/scripts/forge-run.sh" --task "add input validation to src/math.ts" --cwd /path/to/repo
+bash "$PLUGIN_HOME/scripts/evil-pipeline.sh" --task "implement auth middleware" --cwd /path/to/repo
+bash "$PLUGIN_HOME/scripts/elo-show.sh"
 ```
 
 ## Everyday Use
@@ -173,7 +197,7 @@ Inside Codex, the intended prompts are short and mode-first:
 - `forge this implementation`
 - `run the evil pipeline on this risky refactor`
 
-Outside Codex, run the same workflows directly from the repo scripts.
+Outside Codex, run the same workflows from the installed plugin under `~/.codex/plugins/local/codexs-ai-buddies/scripts/`, or keep the repo checkout around and run them from there.
 
 Example repo-targeted prompts:
 
@@ -241,7 +265,7 @@ The plugin now also ships:
 
 - plugin-local command docs in `commands/`
 - plugin-level agent metadata in `agents/openai.yaml`
-- a home-local marketplace install path via `scripts/install-local.sh`
+- copy and link install paths via `scripts/install-local.sh`
 
 ## Campfire
 
