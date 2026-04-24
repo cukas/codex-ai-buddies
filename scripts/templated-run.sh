@@ -90,7 +90,7 @@ if [[ "$PROMPT_VIA_STDIN" == "true" ]]; then
 else
   (
     cd "$CWD"
-    codex_buddies_run_with_timeout "$TIMEOUT" "$BUDDY_BIN" "${ARGS[@]}"
+    codex_buddies_run_with_timeout "$TIMEOUT" "$BUDDY_BIN" "${ARGS[@]}" </dev/null
   ) >"$OUTPUT_FILE" 2>"$ERROR_FILE" || EXIT_CODE=$?
 fi
 

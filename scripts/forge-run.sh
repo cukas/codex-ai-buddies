@@ -67,9 +67,12 @@ if [[ -z "$SELECTED" ]]; then
 fi
 
 if [[ -z "$FORGE_DIR" ]]; then
-  FORGE_DIR="$(codex_buddies_session_dir)/forge-$(date '+%Y%m%d-%H%M%S')"
+  FORGE_DIR="$(mktemp -d "$(codex_buddies_session_dir)/forge-$(date '+%Y%m%d-%H%M%S')-XXXXXX")"
 fi
 mkdir -p "$FORGE_DIR"
+printf '[forge] dir: %s\n' "$FORGE_DIR" >&2
+printf '[forge] engines: %s\n' "$SELECTED" >&2
+printf '[forge] fitness: %s\n' "$FITNESS" >&2
 
 HEAD_SHA="$(git -C "$REPO_ROOT" rev-parse HEAD)"
 CONTEXT="$(codex_buddies_project_context "$CWD")"
@@ -78,20 +81,47 @@ PROMPT="$(codex_buddies_build_forge_prompt "$TASK" "$FITNESS" "$CONTEXT")"
 IFS=',' read -r -a ENGINE_LIST <<< "$SELECTED"
 
 PIDS=()
+PID_ENGINES=()
 for engine in "${ENGINE_LIST[@]}"; do
   [[ -n "$engine" ]] || continue
   WT="${FORGE_DIR}/wt-${engine}"
+  printf '[forge] launching %s\n' "$engine" >&2
   git -C "$REPO_ROOT" worktree add --detach "$WT" "$HEAD_SHA" >/dev/null 2>&1
   codex_buddies_link_shared_node_modules "$REPO_ROOT" "$WT"
   (
-    output_path="$(codex_buddies_dispatch_buddy "$engine" "$WT" "$PROMPT" "$TIMEOUT" exec)"
-    printf '%s\n' "$output_path" > "${FORGE_DIR}/${engine}.response"
+    printf 'running\n' > "${FORGE_DIR}/${engine}.status"
+    if output_path="$(codex_buddies_dispatch_buddy "$engine" "$WT" "$PROMPT" "$TIMEOUT" exec)"; then
+      printf '%s\n' "$output_path" > "${FORGE_DIR}/${engine}.response"
+      printf 'done\n' > "${FORGE_DIR}/${engine}.status"
+    else
+      exit_code=$?
+      failure_output="${FORGE_DIR}/${engine}-dispatch-error.md"
+      printf 'ERROR: %s dispatch failed with exit code %s\n' "$engine" "$exit_code" > "$failure_output"
+      printf '%s\n' "$failure_output" > "${FORGE_DIR}/${engine}.response"
+      printf 'failed:%s\n' "$exit_code" > "${FORGE_DIR}/${engine}.status"
+      exit "$exit_code"
+    fi
   ) &
   PIDS+=("$!")
+  PID_ENGINES+=("$engine")
 done
 
-for pid in "${PIDS[@]}"; do
-  wait "$pid"
+DISPATCH_FAILURES=0
+for i in "${!PIDS[@]}"; do
+  pid="${PIDS[$i]}"
+  engine="${PID_ENGINES[$i]}"
+  if wait "$pid"; then
+    printf '[forge] %s finished\n' "$engine" >&2
+  else
+    exit_code=$?
+    DISPATCH_FAILURES=$((DISPATCH_FAILURES + 1))
+    printf '[forge] %s dispatch failed with exit code %s; continuing\n' "$engine" "$exit_code" >&2
+    if [[ ! -f "${FORGE_DIR}/${engine}.response" ]]; then
+      failure_output="${FORGE_DIR}/${engine}-dispatch-error.md"
+      printf 'ERROR: %s dispatch failed with exit code %s\n' "$engine" "$exit_code" > "$failure_output"
+      printf '%s\n' "$failure_output" > "${FORGE_DIR}/${engine}.response"
+    fi
+  fi
 done
 
 WINNER=""
@@ -115,6 +145,7 @@ RESULT_ROWS=()
 for engine in "${ENGINE_LIST[@]}"; do
   [[ -n "$engine" ]] || continue
   WT="${FORGE_DIR}/wt-${engine}"
+  printf '[forge] scoring %s\n' "$engine" >&2
   RESULT_PATH="$(bash "${SCRIPT_DIR}/forge-score.sh" --dir "$WT" --fitness "$FITNESS" --label "$engine" --timeout "$FITNESS_TIMEOUT")"
   SCORE="$(jq -r '.composite_score // 0' "$RESULT_PATH" 2>/dev/null || echo 0)"
   PASS="$(jq -r '.pass // false' "$RESULT_PATH" 2>/dev/null || echo false)"
@@ -166,6 +197,7 @@ else
 fi
 
 if [[ "$SYNTHESIS_ENABLED" == "true" ]]; then
+  printf '[forge] running synthesis with %s\n' "$SYNTHESIS_ENGINE" >&2
   SYNTHESIS_RESULT="$(bash "${SCRIPT_DIR}/synthesis-run.sh" \
     --task "$TASK" \
     --cwd "$CWD" \
@@ -213,6 +245,9 @@ fi
 {
   printf '\nRecommended result: `%s`\n' "$RECOMMENDED_LABEL"
   printf 'Recommended kind: `%s`\n' "$RECOMMENDED_KIND"
+  if (( DISPATCH_FAILURES > 0 )); then
+    printf '\nDispatch failures: `%s`\n' "$DISPATCH_FAILURES"
+  fi
 } >> "$SUMMARY_FILE"
 
 if command -v jq >/dev/null 2>&1; then

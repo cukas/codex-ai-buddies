@@ -67,7 +67,7 @@ if [[ "$MODE" == "review" ]]; then
     commit:*) CMD+=(--commit "${REVIEW_TARGET#commit:}") ;;
   esac
   CMD+=("$PROMPT")
-  CODEX_HOME="$NESTED_CODEX_HOME" codex_buddies_run_with_timeout "$TIMEOUT" "${CMD[@]}" >"$OUTPUT_FILE" 2>"$ERROR_FILE" || EXIT_CODE=$?
+  CODEX_HOME="$NESTED_CODEX_HOME" codex_buddies_run_with_timeout "$TIMEOUT" "${CMD[@]}" </dev/null >"$OUTPUT_FILE" 2>"$ERROR_FILE" || EXIT_CODE=$?
 else
   CMD=("$CODEX_BIN" exec --ephemeral -C "$CWD" -s "$SANDBOX")
   if ! git -C "$CWD" rev-parse --show-toplevel >/dev/null 2>&1; then
@@ -75,7 +75,7 @@ else
   fi
   [[ -n "$MODEL" ]] && CMD+=(-m "$MODEL")
   CMD+=(-o "$OUTPUT_FILE" "$PROMPT")
-  CODEX_HOME="$NESTED_CODEX_HOME" codex_buddies_run_with_timeout "$TIMEOUT" "${CMD[@]}" >/dev/null 2>"$ERROR_FILE" || EXIT_CODE=$?
+  CODEX_HOME="$NESTED_CODEX_HOME" codex_buddies_run_with_timeout "$TIMEOUT" "${CMD[@]}" </dev/null >/dev/null 2>"$ERROR_FILE" || EXIT_CODE=$?
 fi
 
 if [[ $EXIT_CODE -eq 124 ]]; then
